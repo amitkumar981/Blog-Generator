@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI, Request
-from src.graph.graph_builder import GraphBuilder
-from src.llm.groq_llm import GroqLLM
+from src.graph.graph_builder import Graph_Builder
+from src.llm.groq_llm import GROQLLM
 from dotenv import load_dotenv
 import os
 
@@ -25,10 +25,10 @@ async def create_blogs(request: Request):
         return {"error": "No topic provided."}
 
     # Initialize LLM
-    llm = GroqLLM().get_llm()
+    llm = GROQLLM().get_llm()
 
     # Build and compile the graph
-    graph = GraphBuilder(llm).compile_graph()
+    graph = Graph_Builder(llm).compile_graph(usecase='topic')
 
     # Invoke the graph with the provided topic
     state = graph.invoke({"topic": topic})
