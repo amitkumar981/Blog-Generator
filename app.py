@@ -20,18 +20,24 @@ async def create_blogs(request: Request):
     """
     data = await request.json()
     topic = data.get('topic', '')
-
+    language=data.get('language','')
+    
     if not topic:
-        return {"error": "No topic provided."}
+        return {"error": "Topic is required"}
 
+    
     # Initialize LLM
     llm = GROQLLM().get_llm()
 
     # Build and compile the graph
-    graph = Graph_Builder(llm).compile_graph(usecase='topic')
+    graph_builder = Graph_Builder(llm)
 
-    # Invoke the graph with the provided topic
-    state = graph.invoke({"topic": topic})
+    if language:
+        compiled_graph = graph_builder.compile_graph(usecase="language")
+        state = compiled_graph.invoke({"topic": topic, "current_language": language.lower()})
+    else:
+        compiled_graph = graph_builder.compile_graph(usecase="topic")
+        state = compiled_graph.invoke({"topic": topic})
 
     return {"data": state}
 

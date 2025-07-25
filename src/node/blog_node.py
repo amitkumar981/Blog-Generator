@@ -15,41 +15,41 @@ class BlogNode:
             """
             system_prompt=prompt.format(topic=state['topic'])
 
-            print("[Title Prompt]:",system_prompt.strip())
+            print("[Title Prompt]:",system_prompt)
 
             response=self.llm.invoke(system_prompt)
 
             print("[Title response] :",response.content)
 
-            return {"blog":{"title":response.content.strip()}}
+            return {"blog":{"title":response.content}}
         else:
             raise ValueError("missing topic in state")
     
     def content_generation(self,state:StateBlog):
         "gennerate a blog content based on the topic and previously generated title"
         if 'topic' in state and state['topic']:
-            if 'blog' not in state or 'title' not in state['blog']:
-                prompt = """
-            You are an expert blog writer. Use Markdown formatting.
-            Generate a detailed, engaging blog post with a proper breakdown for the topic: "{topic}".
-            Title: "{title}"
-            Include sections, subheadings, and examples where applicable
+            prompt = """
+        You are an expert blog writer. Use Markdown formatting.
+        Generate a detailed, engaging blog post with a proper breakdown for the topic: "{topic}".
+        Title: "{title}"
+             sections, subheadings, and examples where applicable
                 """
-                system_prompt=prompt.format(topic=state['topic'],
+            system_prompt=prompt.format(topic=state['topic'],
                                             title=state['blog']['title'])
-                print("[content prompt]",system_prompt.strip())
+            print("[content prompt]",system_prompt)
                 
-                response=self.llm.invoke(system_prompt)
-                print("[content response]",response.content)
+            response=self.llm.invoke(system_prompt)
+            print("[content response]",response.content)
 
-                return {
-                    "blog":{
-                        "title":state['blog']['title'],
-                        "content":response.content.strip()
-                    }
+            return {
+                "blog":{
+                    "title":state['blog']['title'],
+                    "content":response.content
                 }
+            }
         else:
             raise ValueError("missing 'topic in blog state")
+    
     def translation(self,state:StateBlog):
         "translate the content into spacific language"
         prompt=""" Tranlate the content into currrent language:{current_language}
@@ -59,20 +59,28 @@ class BlogNode:
         """
         print(state['current_language'])
 
-        blog_content=state['blog']['content']
+        blog_content = state.get("blog", {}).get("content")
+        if not blog_content:
+            raise ValueError("Missing 'content' in blog state for translation.")
 
-        message=[HumanMessage(prompt.format(current_language=state['current_language'],blog_content=blog_content))]
+
+        system_message=prompt.format(current_language=state['current_language'],blog_content=blog_content)
+
+        message=[HumanMessage(system_message)]
 
         content_translation=self.llm.with_structured_output(Blog).invoke(message)
 
         return {"blog":{"content":content_translation}}
     
+    def route(self, state: StateBlog):
+        return {"current_language": state['current_language'] }
+    
     def route_decision(self,state:StateBlog):
         "Route the content to respecticve translation function"
         if state['current_language']=='Hindi':
-            return "Hindi"
-        elif state['current_language']=='Franch':
-            return "French"
+            return "hindi"
+        elif state['current_language']=='French':
+            return "french"
         else:
             return state['current_language']
         

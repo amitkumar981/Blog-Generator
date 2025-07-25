@@ -10,6 +10,6 @@ class Blog(BaseModel):
 class StateBlog(TypedDict):
     topic:str=Field(discription='The topic of the blog')
     blog:Blog=Field(discription='The blog objecy containing the title and content of blog')
-    language:str=Field(discription='Current language of blog')
+    current_language:str=Field(discription='Current language of blog')
     
     
