@@ -1,6 +1,7 @@
 .venv/
-.env/
+.env
 # Ignore all Python cache files and folders
 __pycache__/
 **/__pycache__/
 *.py[cod]
+.langgraph_api/
