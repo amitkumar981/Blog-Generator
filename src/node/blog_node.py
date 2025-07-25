@@ -1,4 +1,6 @@
 from src.state.blog_state import StateBlog
+from langchain_core.messages import HumanMessage,AIMessage
+from src.state.blog_state import Blog
 
 class BlogNode:
     " class repregents the node of blog generation"
@@ -48,8 +50,33 @@ class BlogNode:
                 }
         else:
             raise ValueError("missing 'topic in blog state")
-        
+    def translation(self,state:StateBlog):
+        "translate the content into spacific language"
+        prompt=""" Tranlate the content into currrent language:{current_language}
+        Maintain the orignal tone,style and formatting
+        orignal_content
+        {blog_content}
+        """
+        print(state['current_language'])
 
+        blog_content=state['blog']['content']
+
+        message=[HumanMessage(prompt.format(current_language=state['current_language'],blog_content=blog_content))]
+
+        content_translation=self.llm.with_structured_output(Blog).invoke(message)
+
+        return {"blog":{"content":content_translation}}
+    
+    def route_decision(self,state:StateBlog):
+        "Route the content to respecticve translation function"
+        if state['current_language']=='Hindi':
+            return "Hindi"
+        elif state['current_language']=='Franch':
+            return "French"
+        else:
+            return state['current_language']
+        
+    
 
 
 
